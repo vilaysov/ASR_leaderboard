@@ -2,6 +2,8 @@
 
 import json
 import logging
+import platform
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
@@ -10,6 +12,13 @@ from asr_eval.audio_filter import (
     BANDPASS_LOW_HZ,
     BANDPASS_ORDER,
     bandpass_filter_audio,
+)
+from asr_eval import __version__
+from asr_eval.data import (
+    DEFAULT_SAMPLE_RATE,
+    URGENT24_CONFIG,
+    URGENT24_DATASET_ID,
+    URGENT24_SPLIT,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,6 +77,15 @@ class WhisperTranscriber:
         self.model_id = model_id
         model_config = getattr(self._pipeline.model, "config", None)
         self.revision = revision or getattr(model_config, "_commit_hash", None)
+        self.inference_settings = {
+            "task": "transcribe",
+            "language": "en",
+            "num_beams": 1,
+            "do_sample": False,
+            "device": str(device),
+            "dtype": str(model_kwargs["torch_dtype"]),
+            "attention": model_kwargs.get("attn_implementation", "default"),
+        }
         logger.info(
             "Loaded ASR model %s at revision %s on %s",
             model_id,
@@ -147,6 +165,15 @@ class Qwen3ASRTranscriber:
         self.model_id = model_id
         model_config = getattr(self._model, "config", None)
         self.revision = revision or getattr(model_config, "_commit_hash", None)
+        self.inference_settings = {
+            "task": "transcribe",
+            "language": "en",
+            "max_new_tokens": QWEN3_ASR_MAX_NEW_TOKENS,
+            "do_sample": False,
+            "device": str(self._device),
+            "dtype": str(self._dtype),
+            "attention": "sdpa",
+        }
         logger.info(
             "Loaded Qwen3-ASR model %s at revision %s on %s with %s",
             model_id,
@@ -167,6 +194,7 @@ class Qwen3ASRTranscriber:
         output_ids = self._model.generate(
             **inputs,
             max_new_tokens=QWEN3_ASR_MAX_NEW_TOKENS,
+            do_sample=False,
         )
         generated_ids = output_ids[:, inputs["input_ids"].shape[1] :]
         decoded = self._processor.decode(
@@ -238,6 +266,13 @@ class GraniteTurboCTCTranscriber:
         self.model_id = model_id
         model_config = getattr(self._model, "config", None)
         self.revision = revision or getattr(model_config, "_commit_hash", None)
+        self.inference_settings = {
+            "decoder": "greedy_ctc",
+            "sampling_rate_hz": DEFAULT_SAMPLE_RATE,
+            "frame_bucket": GRANITE_FRAME_BUCKET,
+            "device": str(self._device),
+            "dtype": str(self._dtype),
+        }
         logger.info(
             "Loaded Granite TurboCTC model %s at revision %s on %s with %s",
             model_id,
@@ -252,7 +287,7 @@ class GraniteTurboCTCTranscriber:
     def transcribe_batch(self, audios: Iterable[Any], sampling_rate: int) -> list[str]:
         import torch
 
-        if sampling_rate != 16000:
+        if sampling_rate != DEFAULT_SAMPLE_RATE:
             raise ValueError(
                 "Granite TurboCTC expects 16 kHz audio; got {} Hz".format(
                     sampling_rate
@@ -308,16 +343,32 @@ def create_transcriber(
         )
     if "qwen3-asr" in model_id.lower():
         return Qwen3ASRTranscriber(model_id, revision=revision)
-    return WhisperTranscriber(model_id, revision=revision)
+    if "whisper" in model_id.lower():
+        return WhisperTranscriber(model_id, revision=revision)
+    raise ValueError(
+        "Unsupported model {!r}; choose Whisper, Qwen3-ASR, or Granite.".format(
+            model_id
+        )
+    )
+
+
+def _runtime_metadata() -> Dict[str, str]:
+    """Capture package versions that affect inference and dataset decoding."""
+    return {
+        "python": platform.python_version(),
+        "torch": version("torch"),
+        "transformers": version("transformers"),
+        "datasets": version("datasets"),
+        "numpy": version("numpy"),
+        "scipy": version("scipy"),
+        "asr_eval": __version__,
+    }
 
 
 def write_predictions(
     examples: Iterable[Dict[str, Any]],
     transcriber: Any,
-    dataset_id: str,
-    split: str,
     output_path: Path,
-    dataset_config: Optional[str] = None,
     model_revision: Optional[str] = None,
     batch_size: int = 1,
     bandpass_filter: bool = False,
@@ -325,6 +376,7 @@ def write_predictions(
     """Transcribe examples in bounded batches and persist one JSON object per line."""
     if batch_size <= 0:
         raise ValueError("batch_size must be a positive integer")
+    runtime = _runtime_metadata()
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
@@ -341,9 +393,7 @@ def write_predictions(
         batch_transcriber = getattr(transcriber, "transcribe_batch", None)
         if len(batch) == 1 or not callable(batch_transcriber):
             hypotheses = [
-                transcriber.transcribe(
-                    audio, example["sampling_rate"]
-                )
+                transcriber.transcribe(audio, example["sampling_rate"])
                 for example, audio in zip(batch, audios)
             ]
         else:
@@ -359,11 +409,15 @@ def write_predictions(
                 "sample_id": example["sample_id"],
                 "reference": example["reference"],
                 "hypothesis": hypothesis,
-                "dataset": dataset_id,
-                "dataset_config": dataset_config,
-                "split": split,
+                "dataset": URGENT24_DATASET_ID,
+                "dataset_config": URGENT24_CONFIG,
+                "split": URGENT24_SPLIT,
                 "model": transcriber.model_id,
                 "model_revision": model_revision or transcriber.revision,
+                "batch_size": batch_size,
+                "inference_settings": transcriber.inference_settings,
+                "runtime": runtime,
+                "audio_filter": None,
             }
             if bandpass_filter:
                 record["audio_filter"] = {

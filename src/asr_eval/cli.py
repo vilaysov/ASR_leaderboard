@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from asr_eval.audio_characteristics import analyze_urgent24
-from asr_eval.data import load_examples
+from asr_eval.data import (
+    URGENT24_CONFIG,
+    URGENT24_SPLIT,
+    load_urgent24_asr_examples,
+)
 from asr_eval.inference import (
     DEFAULT_MODEL_ID,
     DEFAULT_MODEL_REVISION,
@@ -19,18 +23,14 @@ from asr_eval.stratified_plots import create_stratified_wer_plots
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run and score ASR evaluations.")
+    parser = argparse.ArgumentParser(
+        description="Run and score URGENT24 ASR evaluations."
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
     transcribe = commands.add_parser(
         "transcribe", help="Run a model and save references and hypotheses."
     )
-    transcribe.add_argument("--dataset", default="speechcolab/gigaspeech")
-    transcribe.add_argument("--dataset-config", default="xs")
-    transcribe.add_argument("--split", default="test")
-    transcribe.add_argument("--audio-column", default="audio")
-    transcribe.add_argument("--text-column", default="text")
-    transcribe.add_argument("--id-column", default="segment_id")
     transcribe.add_argument("--model", default=DEFAULT_MODEL_ID)
     transcribe.add_argument("--model-revision", default=DEFAULT_MODEL_REVISION)
     transcribe.add_argument(
@@ -56,7 +56,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sample_limit.add_argument(
         "--all-samples",
         action="store_true",
-        help="Stream and transcribe every row in the selected dataset split.",
+        help="Transcribe all rows in the URGENT24 non-blind test split.",
     )
     transcribe.add_argument(
         "--output",
@@ -166,31 +166,19 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         if args.batch_size <= 0:
             raise ValueError("--batch-size must be a positive integer")
         logging.info(
-            "Starting transcription of %s samples from %s (config=%s, split=%s)",
+            "Starting transcription of %s URGENT24 samples (config=%s, split=%s)",
             "all" if max_samples is None else "up to {}".format(max_samples),
-            args.dataset,
-            args.dataset_config or "default",
-            args.split,
+            URGENT24_CONFIG,
+            URGENT24_SPLIT,
         )
-        examples = load_examples(
-            dataset_id=args.dataset,
-            dataset_config=args.dataset_config,
-            split=args.split,
-            max_samples=max_samples,
-            audio_column=args.audio_column,
-            text_column=args.text_column,
-            id_column=args.id_column,
-        )
+        examples = load_urgent24_asr_examples(max_samples=max_samples)
         transcriber = create_transcriber(args.model, revision=args.model_revision)
         count = write_predictions(
             examples,
             transcriber,
-            args.dataset,
-            args.split,
             args.output,
-            dataset_config=args.dataset_config,
-            model_revision=args.model_revision,
             batch_size=args.batch_size,
+            model_revision=args.model_revision,
             bandpass_filter=args.bandpass_filter,
         )
         logging.info(

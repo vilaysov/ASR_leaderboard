@@ -1,4 +1,4 @@
-"""Hugging Face streaming dataset adapter."""
+"""URGENT24 streaming dataset adapter."""
 
 import logging
 from itertools import islice
@@ -8,14 +8,21 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+URGENT24_DATASET_ID = "urgent-challenge/urgent2024_official"
+URGENT24_CONFIG = "test_nonblind"
+URGENT24_SPLIT = "validation"
+DEFAULT_SAMPLE_RATE = 16000
+
 
 def _audio_array_and_rate(audio: Any) -> tuple[Any, int]:
-    """Convert Hugging Face audio values to mono samples and their rate."""
+    """Convert a decoded Hugging Face audio value to mono samples and rate."""
     if isinstance(audio, dict):
         if "array" not in audio or "sampling_rate" not in audio:
-            raise ValueError("Decoded audio dictionary must contain array and sampling_rate")
+            raise ValueError(
+                "Decoded audio dictionary must contain array and sampling_rate"
+            )
         array = audio["array"]
-        sampling_rate = int(audio["sampling_rate"])
+        sample_rate = int(audio["sampling_rate"])
     elif callable(getattr(audio, "get_all_samples", None)):
         samples = audio.get_all_samples()
         array = samples.data
@@ -25,7 +32,7 @@ def _audio_array_and_rate(audio: Any) -> tuple[Any, int]:
             array = array.cpu()
         if hasattr(array, "numpy"):
             array = array.numpy()
-        sampling_rate = int(samples.sample_rate)
+        sample_rate = int(samples.sample_rate)
     else:
         raise ValueError(
             "Unsupported decoded audio value of type {}".format(type(audio).__name__)
@@ -39,68 +46,58 @@ def _audio_array_and_rate(audio: Any) -> tuple[Any, int]:
             array = array.mean(axis=0)
     if array.ndim != 1:
         raise ValueError(
-            "Expected mono audio samples, got an array with shape {}".format(array.shape)
+            "Expected mono audio samples, got an array with shape {}".format(
+                array.shape
+            )
         )
-    return array, sampling_rate
+    return array, sample_rate
 
 
-def load_examples(
-    dataset_id: str,
-    dataset_config: Optional[str],
-    split: str,
+def load_urgent24_asr_examples(
     max_samples: Optional[int] = 100,
-    audio_column: str = "audio",
-    text_column: str = "text",
-    id_column: Optional[str] = "segment_id",
 ) -> Iterator[Dict[str, Any]]:
-    """Yield decoded examples, optionally limiting the number of rows."""
+    """Stream URGENT24 non-blind noisy audio with its reference transcript."""
     if max_samples is not None and max_samples <= 0:
         raise ValueError("max_samples must be a positive integer")
 
     from datasets import Audio, load_dataset
 
     logger.info(
-        "Opening streaming dataset %s (config=%s, split=%s)",
-        dataset_id,
-        dataset_config or "default",
-        split,
+        "Opening %s (config=%s, split=%s)",
+        URGENT24_DATASET_ID,
+        URGENT24_CONFIG,
+        URGENT24_SPLIT,
     )
-    dataset_args = {"split": split, "streaming": True}
-    if dataset_config is None:
-        dataset = load_dataset(dataset_id, **dataset_args)
-    else:
-        dataset = load_dataset(dataset_id, dataset_config, **dataset_args)
-
-    if audio_column not in dataset.features:
+    dataset = load_dataset(
+        URGENT24_DATASET_ID,
+        URGENT24_CONFIG,
+        split=URGENT24_SPLIT,
+        streaming=True,
+    )
+    required_columns = {"id", "noisy_audio", "transcript"}
+    missing_columns = required_columns.difference(dataset.features)
+    if missing_columns:
         raise ValueError(
-            "Dataset {!r} has no audio column {!r}".format(dataset_id, audio_column)
-        )
-    dataset = dataset.cast_column(audio_column, Audio(sampling_rate=16000))
-
-    rows = dataset if max_samples is None else islice(dataset, max_samples)
-    for index, row in enumerate(rows):
-        if text_column not in row:
-            raise ValueError(
-                "Dataset {!r} has no text column {!r}".format(dataset_id, text_column)
+            "URGENT24 split is missing required columns: {}".format(
+                ", ".join(sorted(missing_columns))
             )
+        )
+    dataset = dataset.cast_column(
+        "noisy_audio", Audio(sampling_rate=DEFAULT_SAMPLE_RATE)
+    )
+    rows = dataset if max_samples is None else islice(dataset, max_samples)
 
-        sample_id = row.get(id_column) if id_column else None
-        if sample_id is None:
-            sample_id = str(index)
-
-        audio_array, sampling_rate = _audio_array_and_rate(row[audio_column])
-
-        reference = str(row[text_column])
+    for row in rows:
+        sample_id = str(row["id"])
+        reference = str(row["transcript"])
         if reference.strip().lower() == "<not-available>":
             raise ValueError(
-                "Dataset {!r} row {!r} has no reference transcript in column {!r}".format(
-                    dataset_id, sample_id, text_column
-                )
+                "URGENT24 sample {!r} has no reference transcript".format(sample_id)
             )
-
+        audio, sample_rate = _audio_array_and_rate(row["noisy_audio"])
         yield {
-            "sample_id": str(sample_id),
-            "audio": audio_array,
-            "sampling_rate": sampling_rate,
+            "sample_id": sample_id,
+            "audio": audio,
+            "sampling_rate": sample_rate,
             "reference": reference,
         }

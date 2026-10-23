@@ -124,6 +124,9 @@ def test_score_file_reads_jsonl_and_metadata(tmp_path) -> None:
     assert result["scoring_method"] == (
         "kaldialign.edit_distance with merge_compounds=True"
     )
+    assert result["scoring_runtime"]["python"]
+    assert result["scoring_runtime"]["kaldialign"]
+    assert result["scoring_runtime"]["asr_eval"]
     assert result["wer"] == 0.5
     assert result["error_analysis"] == {
         "substitutions": [
@@ -132,6 +135,39 @@ def test_score_file_reads_jsonl_and_metadata(tmp_path) -> None:
         "deletions": [],
         "insertions": [],
     }
+
+
+def test_score_file_preserves_reproducibility_metadata_and_rejects_mixed_runs(
+    tmp_path,
+) -> None:
+    prediction_file = tmp_path / "predictions.jsonl"
+    run_metadata = {
+        "batch_size": 1,
+        "inference_settings": {"language": "en", "do_sample": False},
+        "runtime": {"python": "3.11.0", "torch": "2.5.0"},
+        "audio_filter": None,
+    }
+    records = [
+        {"reference": "one two", "hypothesis": "one two", **run_metadata},
+        {"reference": "three four", "hypothesis": "three four", **run_metadata},
+    ]
+    prediction_file.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
+        encoding="utf-8",
+    )
+
+    result = score_file(prediction_file)
+
+    for key, value in run_metadata.items():
+        assert result[key] == value
+
+    records[1]["batch_size"] = 4
+    prediction_file.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Inconsistent 'batch_size' metadata"):
+        score_file(prediction_file)
 
 
 def test_score_file_reports_most_common_edit_types(tmp_path) -> None:

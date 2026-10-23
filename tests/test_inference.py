@@ -19,6 +19,7 @@ from asr_eval.inference import (
 class FakeTranscriber:
     model_id = "test-model"
     revision = "test-revision"
+    inference_settings = {"task": "test"}
 
     def transcribe(self, audio, sampling_rate):
         assert sampling_rate == 16000
@@ -44,8 +45,6 @@ def test_write_predictions_logs_progress_and_completion(tmp_path, caplog) -> Non
         count = write_predictions(
             examples,
             FakeTranscriber(),
-            "test-dataset",
-            "test",
             output_path,
         )
 
@@ -53,6 +52,11 @@ def test_write_predictions_logs_progress_and_completion(tmp_path, caplog) -> Non
     assert count == 1
     assert records[0]["hypothesis"] == "recognized words"
     assert records[0]["model_revision"] == "test-revision"
+    assert records[0]["batch_size"] == 1
+    assert records[0]["inference_settings"] == {"task": "test"}
+    assert records[0]["dataset"] == "urgent-challenge/urgent2024_official"
+    assert records[0]["runtime"]["python"]
+    assert records[0]["audio_filter"] is None
     assert "Transcribing sample" not in caplog.text
     assert "Finished sample 1" in caplog.text
 
@@ -72,8 +76,6 @@ def test_write_predictions_batches_examples(tmp_path) -> None:
     count = write_predictions(
         examples,
         FakeTranscriber(),
-        "dataset",
-        "test",
         output_path,
         batch_size=2,
     )
@@ -118,8 +120,6 @@ def test_write_predictions_applies_optional_bandpass_filter(
             }
         ],
         CapturingTranscriber(),
-        "test-dataset",
-        "test",
         output_path,
         bandpass_filter=True,
     )
@@ -181,6 +181,15 @@ def test_whisper_transcriber_uses_eager_attention_on_mps(monkeypatch) -> None:
     assert generation_config.suppress_tokens == []
     assert generation_config.begin_suppress_tokens == []
     assert transcriber.revision == "test-revision"
+    assert transcriber.inference_settings == {
+        "task": "transcribe",
+        "language": "en",
+        "num_beams": 1,
+        "do_sample": False,
+        "device": "mps",
+        "dtype": "float16",
+        "attention": "eager",
+    }
 
 
 def test_whisper_transcriber_uses_leaderboard_cuda_precision(monkeypatch) -> None:
@@ -348,8 +357,10 @@ def test_qwen3_asr_uses_leaderboard_inference_settings(monkeypatch) -> None:
         "language": "en",
     }
     assert calls["generate"]["max_new_tokens"] == QWEN3_ASR_MAX_NEW_TOKENS
+    assert calls["generate"]["do_sample"] is False
     assert calls["decode"][1] == "transcription_only"
     assert transcriber.revision == "resolved-qwen-commit"
+    assert transcriber.inference_settings["do_sample"] is False
 
 
 def test_create_transcriber_selects_qwen_by_model_id(monkeypatch) -> None:

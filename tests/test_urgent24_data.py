@@ -3,7 +3,14 @@ import pytest
 import sys
 from types import ModuleType
 
-from asr_eval.data import _audio_array_and_rate
+from asr_eval.data import (
+    DEFAULT_SAMPLE_RATE,
+    URGENT24_CONFIG,
+    URGENT24_DATASET_ID,
+    URGENT24_SPLIT,
+    _audio_array_and_rate,
+    load_urgent24_asr_examples,
+)
 
 
 class FakeAudioSamples:
@@ -59,6 +66,7 @@ class FakeDataset:
     def __init__(self, rows):
         self.rows = rows
         self.cast_column_args = None
+        self.load_args = None
 
     def cast_column(self, column, feature):
         self.cast_column_args = (column, feature)
@@ -71,7 +79,12 @@ class FakeDataset:
 def _install_fake_datasets(monkeypatch, dataset):
     fake_datasets = ModuleType("datasets")
     fake_datasets.Audio = lambda sampling_rate: ("audio-feature", sampling_rate)
-    fake_datasets.load_dataset = lambda *args, **kwargs: dataset
+
+    def load_dataset(*args, **kwargs):
+        dataset.load_args = (args[0], args[1], kwargs)
+        return dataset
+
+    fake_datasets.load_dataset = load_dataset
     monkeypatch.setitem(sys.modules, "datasets", fake_datasets)
 
 
@@ -89,55 +102,39 @@ def _urgent_rows(count):
     ]
 
 
-def test_load_examples_streams_entire_dataset_when_limit_is_none(monkeypatch) -> None:
+def test_load_urgent24_examples_streams_rows_and_uses_official_split(
+    monkeypatch,
+) -> None:
     dataset = FakeDataset(_urgent_rows(3))
     _install_fake_datasets(monkeypatch, dataset)
 
-    from asr_eval.data import load_examples
-
-    examples = list(
-        load_examples(
-            dataset_id="urgent-challenge/urgent2024_official",
-            dataset_config="test_nonblind",
-            split="validation",
-            max_samples=None,
-            audio_column="noisy_audio",
-            text_column="transcript",
-            id_column="id",
-        )
-    )
+    examples = list(load_urgent24_asr_examples(max_samples=None))
 
     assert len(examples) == 3
     assert examples[-1]["sample_id"] == "fileid_2"
     assert examples[-1]["reference"] == "test transcript 2"
+    assert examples[-1]["sampling_rate"] == DEFAULT_SAMPLE_RATE
+    assert dataset.load_args == (
+        URGENT24_DATASET_ID,
+        URGENT24_CONFIG,
+        {"split": URGENT24_SPLIT, "streaming": True},
+    )
     assert dataset.cast_column_args == (
         "noisy_audio",
-        ("audio-feature", 16000),
+        ("audio-feature", DEFAULT_SAMPLE_RATE),
     )
 
 
-def test_load_examples_respects_sample_limit(monkeypatch) -> None:
+def test_load_urgent24_examples_respects_sample_limit(monkeypatch) -> None:
     dataset = FakeDataset(_urgent_rows(3))
     _install_fake_datasets(monkeypatch, dataset)
 
-    from asr_eval.data import load_examples
-
-    examples = list(
-        load_examples(
-            dataset_id="urgent-challenge/urgent2024_official",
-            dataset_config="test_nonblind",
-            split="validation",
-            max_samples=2,
-            audio_column="noisy_audio",
-            text_column="transcript",
-            id_column="id",
-        )
-    )
+    examples = list(load_urgent24_asr_examples(max_samples=2))
 
     assert len(examples) == 2
 
 
-def test_load_examples_rejects_missing_reference_labels(monkeypatch) -> None:
+def test_load_urgent24_examples_rejects_missing_reference_labels(monkeypatch) -> None:
     dataset = FakeDataset(
         [
             {
@@ -152,17 +149,5 @@ def test_load_examples_rejects_missing_reference_labels(monkeypatch) -> None:
     )
     _install_fake_datasets(monkeypatch, dataset)
 
-    from asr_eval.data import load_examples
-
     with pytest.raises(ValueError, match="no reference transcript"):
-        next(
-            load_examples(
-                dataset_id="urgent-challenge/urgent2024_official",
-                dataset_config="test_nonblind",
-                split="validation",
-                max_samples=None,
-                audio_column="noisy_audio",
-                text_column="transcript",
-                id_column="id",
-            )
-        )
+        next(load_urgent24_asr_examples(max_samples=None))

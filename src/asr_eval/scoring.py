@@ -2,11 +2,14 @@
 
 import json
 import math
+import platform
 from collections import Counter
 from dataclasses import asdict, dataclass
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
+from asr_eval import __version__
 from kaldialign import align, edit_distance
 
 from asr_eval._open_asr_normalizer import EnglishTextNormalizer
@@ -462,8 +465,18 @@ def score_file(
                 "split",
                 "model",
                 "model_revision",
+                "batch_size",
+                "inference_settings",
+                "runtime",
+                "audio_filter",
             ):
                 if key in record:
+                    if key in metadata and metadata[key] != record[key]:
+                        raise ValueError(
+                            "Inconsistent {!r} metadata on line {} of {}".format(
+                                key, line_number, input_path
+                            )
+                        )
                     metadata[key] = record[key]
 
     scoring_references, scoring_hypotheses = _apply_normalization(
@@ -498,6 +511,11 @@ def score_file(
     metadata["scoring_method"] = (
         "kaldialign.edit_distance with merge_compounds=True"
     )
+    metadata["scoring_runtime"] = {
+        "python": platform.python_version(),
+        "kaldialign": version("kaldialign"),
+        "asr_eval": __version__,
+    }
     if normalize_reference or normalize_hypothesis or normalize_repetitions:
         raw_score = asdict(score_texts(references, hypotheses))
         if normalize_reference or normalize_hypothesis:

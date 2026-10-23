@@ -11,14 +11,16 @@ from typing import Any, Dict, Iterable, Optional
 
 import numpy as np
 
-from asr_eval.data import _audio_array_and_rate
+from asr_eval.data import (
+    DEFAULT_SAMPLE_RATE,
+    URGENT24_CONFIG,
+    URGENT24_DATASET_ID,
+    URGENT24_SPLIT,
+    _audio_array_and_rate,
+)
 
 logger = logging.getLogger(__name__)
 
-URGENT24_DATASET_ID = "urgent-challenge/urgent2024_official"
-URGENT24_CONFIG = "test_nonblind"
-URGENT24_SPLIT = "validation"
-DEFAULT_SAMPLE_RATE = 16000
 PITCH_FRAME_SECONDS = 0.040
 PITCH_HOP_SECONDS = 0.010
 SNR_FRAME_SECONDS = 0.020
