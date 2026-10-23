@@ -1,0 +1,175 @@
+{
+  "dataset": "urgent-challenge/urgent2024_official",
+  "dataset_config": "test_nonblind",
+  "split": "validation",
+  "model": "openai/whisper-large-v3-turbo",
+  "model_revision": null,
+  "repetition_normalization": {
+    "enabled": true,
+    "applied_to": "hypothesis",
+    "minimum_repetitions": 6,
+    "maximum_segment_words": 8,
+    "behavior": "keep one copy and remove subsequent exact adjacent copies",
+    "samples_changed": 0,
+    "words_removed": 0
+  },
+  "scoring_method": "kaldialign.edit_distance with merge_compounds=True",
+  "normalization": {
+    "method": "Hugging Face Open ASR Leaderboard EnglishTextNormalizer",
+    "reference": true,
+    "hypothesis": true
+  },
+  "raw_score": {
+    "samples": 1000,
+    "reference_words": 18221,
+    "wer": 0.24098567586850336,
+    "substitutions": 2881,
+    "deletions": 1214,
+    "insertions": 296
+  },
+  "wer_change": -0.10639312325112613,
+  "samples": 1000,
+  "reference_words": 18530,
+  "wer": 0.13459255261737724,
+  "substitutions": 1047,
+  "deletions": 1113,
+  "insertions": 334,
+  "error_analysis": {
+    "substitutions": [
+      {
+        "reference_word": "and",
+        "hypothesis_word": "in",
+        "count": 10
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "the",
+        "count": 8
+      },
+      {
+        "reference_word": "t",
+        "hypothesis_word": "not",
+        "count": 5
+      },
+      {
+        "reference_word": "the",
+        "hypothesis_word": "a",
+        "count": 5
+      },
+      {
+        "reference_word": "he",
+        "hypothesis_word": "you",
+        "count": 4
+      },
+      {
+        "reference_word": "in",
+        "hypothesis_word": "and",
+        "count": 4
+      },
+      {
+        "reference_word": "the",
+        "hypothesis_word": "to",
+        "count": 4
+      },
+      {
+        "reference_word": "don",
+        "hypothesis_word": "do",
+        "count": 3
+      },
+      {
+        "reference_word": "had",
+        "hypothesis_word": "have",
+        "count": 3
+      },
+      {
+        "reference_word": "him",
+        "hypothesis_word": "you",
+        "count": 3
+      }
+    ],
+    "deletions": [
+      {
+        "word": "and",
+        "count": 59
+      },
+      {
+        "word": "you",
+        "count": 57
+      },
+      {
+        "word": "i",
+        "count": 46
+      },
+      {
+        "word": "the",
+        "count": 46
+      },
+      {
+        "word": "know",
+        "count": 42
+      },
+      {
+        "word": "is",
+        "count": 41
+      },
+      {
+        "word": "it",
+        "count": 40
+      },
+      {
+        "word": "a",
+        "count": 27
+      },
+      {
+        "word": "like",
+        "count": 26
+      },
+      {
+        "word": "of",
+        "count": 25
+      }
+    ],
+    "insertions": [
+      {
+        "word": "the",
+        "count": 19
+      },
+      {
+        "word": "a",
+        "count": 14
+      },
+      {
+        "word": "have",
+        "count": 10
+      },
+      {
+        "word": "that",
+        "count": 10
+      },
+      {
+        "word": "to",
+        "count": 10
+      },
+      {
+        "word": "are",
+        "count": 9
+      },
+      {
+        "word": "is",
+        "count": 9
+      },
+      {
+        "word": "it",
+        "count": 7
+      },
+      {
+        "word": "you",
+        "count": 7
+      },
+      {
+        "word": ".",
+        "count": 6
+      }
+    ]
+  }
+}

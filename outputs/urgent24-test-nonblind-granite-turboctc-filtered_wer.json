@@ -1,0 +1,175 @@
+{
+  "dataset": "urgent-challenge/urgent2024_official",
+  "dataset_config": "test_nonblind",
+  "split": "validation",
+  "model": "ibm-granite/granite-speech-5.0-470m-turboctc-nc",
+  "model_revision": "05b33f57fe08aae7a0365c7e096a42658f8a28ac",
+  "repetition_normalization": {
+    "enabled": true,
+    "applied_to": "hypothesis",
+    "minimum_repetitions": 6,
+    "maximum_segment_words": 8,
+    "behavior": "keep one copy and remove subsequent exact adjacent copies",
+    "samples_changed": 0,
+    "words_removed": 0
+  },
+  "scoring_method": "kaldialign.edit_distance with merge_compounds=True",
+  "normalization": {
+    "method": "Hugging Face Open ASR Leaderboard EnglishTextNormalizer",
+    "reference": true,
+    "hypothesis": true
+  },
+  "raw_score": {
+    "samples": 1000,
+    "reference_words": 18221,
+    "wer": 0.2959771692003732,
+    "substitutions": 3865,
+    "deletions": 1005,
+    "insertions": 523
+  },
+  "wer_change": -0.18982498355547306,
+  "samples": 1000,
+  "reference_words": 18530,
+  "wer": 0.10615218564490016,
+  "substitutions": 797,
+  "deletions": 983,
+  "insertions": 187,
+  "error_analysis": {
+    "substitutions": [
+      {
+        "reference_word": "s",
+        "hypothesis_word": "is",
+        "count": 50
+      },
+      {
+        "reference_word": "oh",
+        "hypothesis_word": "0",
+        "count": 12
+      },
+      {
+        "reference_word": "and",
+        "hypothesis_word": "in",
+        "count": 8
+      },
+      {
+        "reference_word": "t",
+        "hypothesis_word": "not",
+        "count": 5
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "the",
+        "count": 4
+      },
+      {
+        "reference_word": "and",
+        "hypothesis_word": "than",
+        "count": 3
+      },
+      {
+        "reference_word": "don",
+        "hypothesis_word": "do",
+        "count": 3
+      },
+      {
+        "reference_word": "that",
+        "hypothesis_word": "it",
+        "count": 3
+      },
+      {
+        "reference_word": "the",
+        "hypothesis_word": "a",
+        "count": 3
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "an",
+        "count": 2
+      }
+    ],
+    "deletions": [
+      {
+        "word": "and",
+        "count": 53
+      },
+      {
+        "word": "you",
+        "count": 49
+      },
+      {
+        "word": "i",
+        "count": 44
+      },
+      {
+        "word": "the",
+        "count": 39
+      },
+      {
+        "word": "is",
+        "count": 35
+      },
+      {
+        "word": "it",
+        "count": 32
+      },
+      {
+        "word": "know",
+        "count": 29
+      },
+      {
+        "word": "of",
+        "count": 26
+      },
+      {
+        "word": "a",
+        "count": 25
+      },
+      {
+        "word": "that",
+        "count": 16
+      }
+    ],
+    "insertions": [
+      {
+        "word": "a",
+        "count": 8
+      },
+      {
+        "word": "is",
+        "count": 7
+      },
+      {
+        "word": "that",
+        "count": 7
+      },
+      {
+        "word": "the",
+        "count": 7
+      },
+      {
+        "word": "and",
+        "count": 6
+      },
+      {
+        "word": "it",
+        "count": 6
+      },
+      {
+        "word": "are",
+        "count": 5
+      },
+      {
+        "word": "have",
+        "count": 4
+      },
+      {
+        "word": "to",
+        "count": 4
+      },
+      {
+        "word": "in",
+        "count": 3
+      }
+    ]
+  }
+}

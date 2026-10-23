@@ -1,0 +1,352 @@
+{
+  "dataset": "urgent-challenge/urgent2024_official",
+  "dataset_config": "test_nonblind",
+  "split": "validation",
+  "model": "openai/whisper-large-v3-turbo",
+  "model_revision": null,
+  "repetition_normalization": {
+    "enabled": true,
+    "applied_to": "hypothesis",
+    "minimum_repetitions": 6,
+    "maximum_segment_words": 8,
+    "behavior": "keep one copy and remove subsequent exact adjacent copies",
+    "samples_changed": 0,
+    "words_removed": 0
+  },
+  "scoring_method": "kaldialign.edit_distance with merge_compounds=True",
+  "normalization": {
+    "method": "Hugging Face Open ASR Leaderboard EnglishTextNormalizer",
+    "reference": true,
+    "hypothesis": true
+  },
+  "raw_score": {
+    "samples": 1000,
+    "reference_words": 18221,
+    "wer": 0.24098567586850336,
+    "substitutions": 2881,
+    "deletions": 1214,
+    "insertions": 296
+  },
+  "wer_change": -0.10639312325112613,
+  "stratified_wer": {
+    "characteristics_file": "outputs/urgent24-test-nonblind-audio-characteristics.jsonl",
+    "sample_id_join": "exact",
+    "wer_basis": "Same normalization and repetition settings as the overall score; aggregate edit errors divided by aggregate reference words.",
+    "pitch_range": {
+      "interpretation": "Pitch ranges are acoustic proxies, not verified speaker gender.",
+      "groups": {
+        "male_pitch_range_proxy": {
+          "median_f0_hz": [
+            85.0,
+            155.0
+          ],
+          "wer": {
+            "samples": 576,
+            "reference_words": 10787,
+            "wer": 0.14461852229535552,
+            "substitutions": 630,
+            "deletions": 726,
+            "insertions": 204
+          }
+        },
+        "female_pitch_range_proxy": {
+          "median_f0_hz": [
+            165.0,
+            255.0
+          ],
+          "wer": {
+            "samples": 357,
+            "reference_words": 6577,
+            "wer": 0.11981146419340125,
+            "substitutions": 348,
+            "deletions": 334,
+            "insertions": 106
+          }
+        },
+        "other_or_unavailable": {
+          "description": "Median F0 outside the two selected ranges or unavailable.",
+          "wer": {
+            "samples": 67,
+            "reference_words": 1166,
+            "wer": 0.12521440823327615,
+            "substitutions": 69,
+            "deletions": 53,
+            "insertions": 24
+          }
+        }
+      }
+    },
+    "median_frame_snr_db": {
+      "bin_width_db": 5,
+      "range_db": [
+        -20,
+        20
+      ],
+      "interval_convention": "Left-inclusive and right-exclusive, except the final bin includes 20 dB.",
+      "bins": [
+        {
+          "snr_db": "[-20, -15) dB",
+          "wer": {
+            "samples": 1,
+            "reference_words": 5,
+            "wer": 0.4,
+            "substitutions": 2,
+            "deletions": 0,
+            "insertions": 0
+          }
+        },
+        {
+          "snr_db": "[-15, -10) dB",
+          "wer": {
+            "samples": 17,
+            "reference_words": 192,
+            "wer": 0.296875,
+            "substitutions": 20,
+            "deletions": 31,
+            "insertions": 6
+          }
+        },
+        {
+          "snr_db": "[-10, -5) dB",
+          "wer": {
+            "samples": 141,
+            "reference_words": 2632,
+            "wer": 0.3058510638297872,
+            "substitutions": 353,
+            "deletions": 388,
+            "insertions": 64
+          }
+        },
+        {
+          "snr_db": "[-5, 0) dB",
+          "wer": {
+            "samples": 216,
+            "reference_words": 3940,
+            "wer": 0.1616751269035533,
+            "substitutions": 280,
+            "deletions": 270,
+            "insertions": 87
+          }
+        },
+        {
+          "snr_db": "[0, 5) dB",
+          "wer": {
+            "samples": 298,
+            "reference_words": 5578,
+            "wer": 0.10326281821441377,
+            "substitutions": 227,
+            "deletions": 250,
+            "insertions": 99
+          }
+        },
+        {
+          "snr_db": "[5, 10) dB",
+          "wer": {
+            "samples": 179,
+            "reference_words": 3411,
+            "wer": 0.0674289064790384,
+            "substitutions": 95,
+            "deletions": 103,
+            "insertions": 32
+          }
+        },
+        {
+          "snr_db": "[10, 15) dB",
+          "wer": {
+            "samples": 109,
+            "reference_words": 2056,
+            "wer": 0.07684824902723736,
+            "substitutions": 63,
+            "deletions": 60,
+            "insertions": 35
+          }
+        },
+        {
+          "snr_db": "[15, 20] dB",
+          "wer": {
+            "samples": 38,
+            "reference_words": 681,
+            "wer": 0.041116005873715125,
+            "substitutions": 6,
+            "deletions": 11,
+            "insertions": 11
+          }
+        }
+      ],
+      "excluded": {
+        "below_-20_db": {
+          "samples": 0,
+          "reference_words": 0,
+          "wer": null,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "above_20_db": {
+          "samples": 1,
+          "reference_words": 35,
+          "wer": 0.02857142857142857,
+          "substitutions": 1,
+          "deletions": 0,
+          "insertions": 0
+        },
+        "unavailable": {
+          "samples": 0,
+          "reference_words": 0,
+          "wer": null,
+          "substitutions": 0,
+          "deletions": 0,
+          "insertions": 0
+        }
+      }
+    },
+    "figures": {
+      "wer_by_median_frame_snr": "outputs/urgent24-test-nonblind-whisper-large-v3-filtered-wer-by-characteristics-snr-wer.png",
+      "wer_by_median_f0_pitch_range": "outputs/urgent24-test-nonblind-whisper-large-v3-filtered-wer-by-characteristics-pitch-wer.png"
+    }
+  },
+  "samples": 1000,
+  "reference_words": 18530,
+  "wer": 0.13459255261737724,
+  "substitutions": 1047,
+  "deletions": 1113,
+  "insertions": 334,
+  "error_analysis": {
+    "substitutions": [
+      {
+        "reference_word": "and",
+        "hypothesis_word": "in",
+        "count": 10
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "the",
+        "count": 8
+      },
+      {
+        "reference_word": "t",
+        "hypothesis_word": "not",
+        "count": 5
+      },
+      {
+        "reference_word": "the",
+        "hypothesis_word": "a",
+        "count": 5
+      },
+      {
+        "reference_word": "he",
+        "hypothesis_word": "you",
+        "count": 4
+      },
+      {
+        "reference_word": "in",
+        "hypothesis_word": "and",
+        "count": 4
+      },
+      {
+        "reference_word": "the",
+        "hypothesis_word": "to",
+        "count": 4
+      },
+      {
+        "reference_word": "don",
+        "hypothesis_word": "do",
+        "count": 3
+      },
+      {
+        "reference_word": "had",
+        "hypothesis_word": "have",
+        "count": 3
+      },
+      {
+        "reference_word": "him",
+        "hypothesis_word": "you",
+        "count": 3
+      }
+    ],
+    "deletions": [
+      {
+        "word": "and",
+        "count": 59
+      },
+      {
+        "word": "you",
+        "count": 57
+      },
+      {
+        "word": "i",
+        "count": 46
+      },
+      {
+        "word": "the",
+        "count": 46
+      },
+      {
+        "word": "know",
+        "count": 42
+      },
+      {
+        "word": "is",
+        "count": 41
+      },
+      {
+        "word": "it",
+        "count": 40
+      },
+      {
+        "word": "a",
+        "count": 27
+      },
+      {
+        "word": "like",
+        "count": 26
+      },
+      {
+        "word": "of",
+        "count": 25
+      }
+    ],
+    "insertions": [
+      {
+        "word": "the",
+        "count": 19
+      },
+      {
+        "word": "a",
+        "count": 14
+      },
+      {
+        "word": "have",
+        "count": 10
+      },
+      {
+        "word": "that",
+        "count": 10
+      },
+      {
+        "word": "to",
+        "count": 10
+      },
+      {
+        "word": "are",
+        "count": 9
+      },
+      {
+        "word": "is",
+        "count": 9
+      },
+      {
+        "word": "it",
+        "count": 7
+      },
+      {
+        "word": "you",
+        "count": 7
+      },
+      {
+        "word": ".",
+        "count": 6
+      }
+    ]
+  }
+}

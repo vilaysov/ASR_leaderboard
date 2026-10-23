@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asr-eval"
+version = "0.1.0"
+description = "A small, modular speech recognition evaluation pipeline."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "datasets[audio]>=2.18.0",
+    "kaldialign>=0.12",
+    "matplotlib>=3.7.0",
+    "numpy>=1.23.0",
+    "regex>=2023.0.0",
+    "scipy>=1.10.0",
+    "torch>=2.1.0",
+    "transformers>=4.38.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+qwen = ["transformers>=5.13.0"]
+granite = ["transformers>=5.16.0", "torchaudio>=2.1.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"asr_eval._open_asr_normalizer" = ["LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

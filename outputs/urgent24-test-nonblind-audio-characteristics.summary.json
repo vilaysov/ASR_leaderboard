@@ -1,0 +1,35 @@
+{
+  "dataset": "urgent-challenge/urgent2024_official",
+  "dataset_config": "test_nonblind",
+  "split": "validation",
+  "samples": 1000,
+  "pitch": {
+    "per_sample_median_f0_hz": {
+      "median": 144.582,
+      "p10": 111.036,
+      "p90": 207.969
+    },
+    "pitch_range_estimate_counts": {
+      "typically_lower_pitch": 634,
+      "typically_higher_pitch": 224,
+      "overlapping_pitch_range": 142
+    },
+    "interpretation": "Pitch ranges describe acoustic F0 only and do not determine speaker gender.",
+    "pitch_range_thresholds_hz": {
+      "typically_lower_pitch": "median F0 < 165 Hz",
+      "overlapping_pitch_range": "median F0 from 165 through 185 Hz",
+      "typically_higher_pitch": "median F0 > 185 Hz"
+    },
+    "frame_seconds": 0.04,
+    "hop_seconds": 0.01,
+    "min_pitch_hz": 60.0,
+    "max_pitch_hz": 400.0
+  },
+  "snr": {
+    "dataset_snr_db_median": 7.2963,
+    "median_active_frame_snr_db_median": 2.1039,
+    "calculation": "Per-frame 10*log10(clean power / (noisy-clean) power), 20 ms windows with 10 ms hop; median over active frames, then median across examples.",
+    "length_handling": "Clean/noisy pairs are truncated to the shorter decoded length.",
+    "active_frame_threshold": "clean RMS >= max(1e-5, 1% of the clip's peak frame RMS)"
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "dataset": "urgent-challenge/urgent2024_official",
+  "dataset_config": "test_nonblind",
+  "split": "validation",
+  "model": "Qwen/Qwen3-ASR-1.7B-hf",
+  "model_revision": null,
+  "repetition_normalization": {
+    "enabled": true,
+    "applied_to": "hypothesis",
+    "minimum_repetitions": 6,
+    "maximum_segment_words": 8,
+    "behavior": "keep one copy and remove subsequent exact adjacent copies",
+    "samples_changed": 0,
+    "words_removed": 0
+  },
+  "scoring_method": "kaldialign.edit_distance with merge_compounds=True",
+  "normalization": {
+    "method": "Hugging Face Open ASR Leaderboard EnglishTextNormalizer",
+    "reference": true,
+    "hypothesis": true
+  },
+  "raw_score": {
+    "samples": 1000,
+    "reference_words": 18221,
+    "wer": 0.24356511717249327,
+    "substitutions": 3374,
+    "deletions": 850,
+    "insertions": 214
+  },
+  "wer_change": -0.14712690886164598,
+  "proper_name_weighted_wer": {
+    "samples": 1000,
+    "reference_words": 18530,
+    "proper_name_reference_tokens": 490,
+    "weighted_reference_words": 19510.0,
+    "weighted_substitution_cost": 1027.0,
+    "weighted_deletion_cost": 753.0,
+    "weighted_insertion_cost": 209.0,
+    "weighted_edit_cost": 1989.0,
+    "wer": 0.10194771911840082,
+    "proper_names_file": "outputs/urgent24-test-nonblind-whisper-large-v3-reference-names.csv",
+    "unique_proper_names": 312,
+    "proper_name_weight": 3.0,
+    "matching": "Case- and punctuation-insensitive exact phrase matching, scoped to sample_ids when present.",
+    "alignment": "Weighted edit distance with split/join compound matches; insertion cost is weighted when the inserted phrase matches a listed proper name."
+  },
+  "samples": 1000,
+  "reference_words": 18530,
+  "wer": 0.09643820831084728,
+  "substitutions": 835,
+  "deletions": 736,
+  "insertions": 216,
+  "error_analysis": {
+    "substitutions": [
+      {
+        "reference_word": "and",
+        "hypothesis_word": "in",
+        "count": 7
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "the",
+        "count": 5
+      },
+      {
+        "reference_word": "t",
+        "hypothesis_word": "not",
+        "count": 5
+      },
+      {
+        "reference_word": "don",
+        "hypothesis_word": "do",
+        "count": 3
+      },
+      {
+        "reference_word": "in",
+        "hypothesis_word": "and",
+        "count": 3
+      },
+      {
+        "reference_word": "would",
+        "hypothesis_word": "will",
+        "count": 3
+      },
+      {
+        "reference_word": "a",
+        "hypothesis_word": "i",
+        "count": 2
+      },
+      {
+        "reference_word": "am",
+        "hypothesis_word": "do",
+        "count": 2
+      },
+      {
+        "reference_word": "an",
+        "hypothesis_word": "the",
+        "count": 2
+      },
+      {
+        "reference_word": "at",
+        "hypothesis_word": "of",
+        "count": 2
+      }
+    ],
+    "deletions": [
+      {
+        "word": "and",
+        "count": 34
+      },
+      {
+        "word": "i",
+        "count": 30
+      },
+      {
+        "word": "the",
+        "count": 30
+      },
+      {
+        "word": "you",
+        "count": 30
+      },
+      {
+        "word": "it",
+        "count": 27
+      },
+      {
+        "word": "is",
+        "count": 25
+      },
+      {
+        "word": "of",
+        "count": 25
+      },
+      {
+        "word": "a",
+        "count": 18
+      },
+      {
+        "word": "to",
+        "count": 12
+      },
+      {
+        "word": "in",
+        "count": 11
+      }
+    ],
+    "insertions": [
+      {
+        "word": "the",
+        "count": 11
+      },
+      {
+        "word": "it",
+        "count": 9
+      },
+      {
+        "word": "and",
+        "count": 7
+      },
+      {
+        "word": "a",
+        "count": 6
+      },
+      {
+        "word": "are",
+        "count": 6
+      },
+      {
+        "word": "have",
+        "count": 5
+      },
+      {
+        "word": "is",
+        "count": 5
+      },
+      {
+        "word": "you",
+        "count": 5
+      },
+      {
+        "word": "i",
+        "count": 4
+      },
+      {
+        "word": "to",
+        "count": 4
+      }
+    ]
+  }
+}
